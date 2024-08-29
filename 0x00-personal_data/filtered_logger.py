@@ -32,7 +32,7 @@ def get_logger() -> logging.Logger:
     logger.propagate = False
 
     stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(RedactingFormatter(List(PII_FIELDS)))
+    stream_handler.setFormatter(RedactingFormatter(PII_FIELDS))
     logger.addHandler(stream_handler)
 
     return logger
@@ -52,6 +52,32 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
                                                      host=host,
                                                      database=db_name)
     return cnx
+
+
+def main():
+    """
+    obtain a database connection using get_db and retrieve all rows
+    in the users table and display each row under a filtered format like this
+    """
+    db = get_db()
+    cursor = db.cursor()
+
+    query = ('SELECT * FROM users;')
+    cursor.execute(query)
+    field_names = cursor.fetchall()
+
+    logger = get_logger()
+
+    for row in field_names:
+        fields = 'name={}; email={}; phone={}; ssn={}; password={}; ip={}; '\
+            'last_login={}; user_agent={};'
+        fields = fields.format(row[0], row[1], row[2], row[3],
+                               row[4], row[5], row[6], row[7])
+        
+        logger.info(fields)
+
+    cursor.close()
+    db.close()
 
 
 class RedactingFormatter(logging.Formatter):
@@ -74,3 +100,7 @@ class RedactingFormatter(logging.Formatter):
         record.msg = filter_datum(self.fields, self.REDACTION,
                                   record.getMessage(), self.SEPARATOR)
         return super(RedactingFormatter, self).format(record)
+
+
+if __name__ == "__main__":
+    main()
