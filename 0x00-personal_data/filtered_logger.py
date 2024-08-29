@@ -6,6 +6,8 @@ Module for handling Personal Data
 from typing import List
 import re
 import logging
+from os import environ
+import mysql.connector
 
 PII_FIELDS = ("name", "email", "phone", "ssn", "password")
 
@@ -36,9 +38,26 @@ def get_logger() -> logging.Logger:
     return logger
 
 
+def get_db() -> mysql.connector.connection.MySQLConnection:
+    """
+    Returns a connector to a MySQL database
+    """
+    username = environ.get("PERSONAL_DATA_DB_USERNAME", "root")
+    password = environ.get("PERSONAL_DATA_DB_PASSWORD", "")
+    host = environ.get("PERSONAL_DATA_DB_HOST", "localhost")
+    db_name = environ.get("PERSONAL_DATA_DB_NAME")
+
+    cnx = mysql.connector.connection.MySQLConnection(user=username,
+                                                     password=password,
+                                                     host=host,
+                                                     database=db_name)
+    return cnx
+
+
 class RedactingFormatter(logging.Formatter):
-    """ Redacting Formatter class
-        """
+    """
+    Redacting Formatter class
+    """
 
     REDACTION = "***"
     FORMAT = "[HOLBERTON] %(name)s %(levelname)s %(asctime)-15s: %(message)s"
