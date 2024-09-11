@@ -58,7 +58,7 @@ def logout() -> str:
     """
     Returns request with form data with email and password fields
     """
-    user_cookie = request.form.get('seesion_id', None)
+    user_cookie = request.cookies.get("session_id", None)
     user = AUTH.get_user_from_session_id(user_cookie)
     if user_cookie is None or user is None:
         abort(403)
