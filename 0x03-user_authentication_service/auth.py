@@ -114,8 +114,6 @@ class Auth:
         """
         Updates the password for a given reset token.
         """
-        if reset_token is None or password is None:
-            return None
         try:
             user = self._db.find_user_by(reset_token=reset_token)
         except NoResultFound:
